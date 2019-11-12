@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """
 Calculates the variability in the DNA sequence for the fasta file
+
+Discussed homework with Jeannette Rustin
 """
 
+__author__ = "Yuta Sakai"
+
 import scipy.signal as ssg
-import numpy as np
+
 
 def main():
     fasta_file = open("/Users/m006703/Class/CSCI5481/Homework4/Homework4-seqs.fna", "r")
