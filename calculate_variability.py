@@ -8,12 +8,13 @@ Discussed homework with Jeannette Rustin
 __author__ = "Yuta Sakai"
 
 import scipy.signal as ssg
+import numpy as np
 
 
 def main():
     fasta_file = open("/Users/m006703/Class/CSCI5481/Homework4/Homework4-seqs.fna", "r")
     variability_file = open("/Users/m006703/Class/CSCI5481/Homework4/variability.csv", "w")
-    variability_file.write("Base,Variability,Smoothed Variability\n")
+    variability_file.write("Base,Smoothed Variability\n")
 
     # Collect the identifiers and sequences from the fasta file
     identifiers = []
@@ -50,20 +51,30 @@ def main():
         variability_list.append(variability)
         index += 1
 
-    # Smooth the variability using Savitzky-Golay filter
-    smooted_variability_list = ssg.savgol_filter(variability_list, 51, 3)
+
+    # Use simple moving average
+    window = 50
+    smoothed_variability_list = moving_average(variability_list, window)
+    print(smoothed_variability_list)
 
     # Write the results to csv file
     index = 0
-    while index in range(0, len(variability_list)):
-        base = index + 1
-        variability_file.write(str(base) + "," + str(variability_list[index]) + "," +
-                               str(smooted_variability_list[index]) + "\n")
+    base = window
+    while index in range(0, len(smoothed_variability_list)):
+        base = window
+        variability_file.write(str(base) + "," + str(smoothed_variability_list[index]) + "\n")
+        window += 1
         index += 1
 
     fasta_file.close()
     variability_file.close()
     print("Script is done running")
+
+
+def moving_average(values, window):
+    weights = np.repeat(1.0, window) / window
+    simple_moving_average = np.convolve(values, weights, "valid")
+    return simple_moving_average
 
 
 if __name__ == "__main__":
