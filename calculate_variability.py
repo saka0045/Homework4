@@ -7,12 +7,38 @@ Discussed homework with Jeannette Rustin
 
 __author__ = "Yuta Sakai"
 
+import argparse
+import os
 import scipy.signal as ssg
 
 
 def main():
-    fasta_file = open("/Users/m006703/Class/CSCI5481/Homework4/Homework4-seqs.fna", "r")
-    variability_file = open("/Users/m006703/Class/CSCI5481/Homework4/variability.csv", "w")
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-i", "--inputFile", dest="input_file", required=True,
+        help="full path to the Homework4-seqs.fna fasta file"
+    )
+    parser.add_argument(
+        "-o", "--outputDir", dest="output_dir", required=True,
+        help="Directory to save output file"
+    )
+
+    args = parser.parse_args()
+
+    input_file = os.path.abspath(args.input_file)
+    out_path = os.path.abspath(args.output_dir)
+
+    # Add / at the end if it is not included in the output path
+    if out_path.endswith("/"):
+        out_path = out_path
+    else:
+        out_path = out_path + "/"
+
+    fasta_file = open(input_file, "r")
+    variability_file = open(out_path + "variability.csv", "w")
+    variable_regions_file = open(out_path + "variable_regions.txt", "w")
+
+    # Make headers for the variability file
     variability_file.write("Base,Variability,Smoothed Variability\n")
 
     # Collect the identifiers and sequences from the fasta file
@@ -28,6 +54,27 @@ def main():
     make_csv(smoothed_sequence_identity_list, variability_file, sequence_identity_list)
 
     # Interrogate the smoothed_sequence_identity_list and identify the variable region
+    end_variable_region_list, start_variable_region_list = identify_variable_regions(smoothed_sequence_identity_list)
+
+    # Make the variability region tab delimited file
+    for index, start_region in enumerate(start_variable_region_list):
+        variable_regions_file.write(str(start_region) + "\t" + str(end_variable_region_list[index]) + "\n")
+
+    fasta_file.close()
+    variability_file.close()
+    variable_regions_file.close()
+    print("Script is done running")
+
+
+def identify_variable_regions(smoothed_sequence_identity_list):
+    """
+    Function to identify the variable regions. Variable region is defined as a region where the sequence identity drops
+    below 75%. With 4 nucleotides there is 25% chance of any nucleotide to be at that sequence by chance.
+    Chance of any 3 nucleotides to be at that position is up to 75%, therefore if the sequence identity at the given
+    position is greater than 75%, the sequence is conserved.
+    :param smoothed_sequence_identity_list:
+    :return:
+    """
     start_variable_region = "not yet initialized"
     end_variable_region = "not yet initialized"
     start_variable_region_list = []
@@ -61,10 +108,7 @@ def main():
                 end_variable_region = ""
             else:
                 continue
-
-    fasta_file.close()
-    variability_file.close()
-    print("Script is done running")
+    return end_variable_region_list, start_variable_region_list
 
 
 def make_csv(smoothed_sequence_identity_list, variability_file, sequence_identity_list):
