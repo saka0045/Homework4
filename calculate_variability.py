@@ -10,6 +10,8 @@ __author__ = "Yuta Sakai"
 import argparse
 import os
 import scipy.signal as ssg
+from phylogeny import create_genetic_distance_dict_and_file, calculate_q_distance, find_neighbors, \
+    update_genetic_distance, join_neighbors, make_edges_file
 
 
 def main():
@@ -60,9 +62,53 @@ def main():
     for index, start_region in enumerate(start_variable_region_list):
         variable_regions_file.write(str(start_region) + "\t" + str(end_variable_region_list[index]) + "\n")
 
+    # Subset to 100 sequences, will just use the first 100
+    subset_sequences = sequences[0:100]
+    subset_identifiers = identifiers[0:100]
+
+    # Use the code from hw3 to make the tree
+    # Calculate the genetic distances of the 100 subset of sequences
+    genetic_distance_dict, genetic_distance_file = create_genetic_distance_dict_and_file(subset_identifiers, out_path,
+                                                                                         subset_sequences)
+
+    root = len(subset_identifiers) + (len(subset_identifiers) - 2)
+    edges_dict = {}
+
+    # Loop until all of the neighbors are joined
+    while root > len(subset_identifiers):
+        # Calculate the Q matrix and store the Q distances in a dictionary
+        q_matrix_dict = calculate_q_distance(genetic_distance_dict)
+
+        # Find the minimum distance in the Q matrix
+        min_q_distance, min_q_distance_key, min_q_distance_partner = find_neighbors(q_matrix_dict)
+
+        # Join the neighbors and calculate the distance to the newly formed root
+        edges_dict = join_neighbors(edges_dict, genetic_distance_dict, min_q_distance_key, min_q_distance_partner, root)
+
+        # Update genetic_distance_dict
+        genetic_distance_dict = update_genetic_distance(genetic_distance_dict, min_q_distance_key,
+                                                        min_q_distance_partner, root)
+        # Subtract 1 from the root number and repeat
+        root -= 1
+
+    # For odd number of tips, there will be 2 nodes left over
+    # Add the distance between those nodes and add it to the edges_dict
+    if len(genetic_distance_dict) == 2:
+        final_roots = list(genetic_distance_dict.keys())
+        final_root_1 = min(final_roots)
+        final_root_2 = max(final_roots)
+        edges_dict[str(final_root_1)][str(final_root_2)] = genetic_distance_dict[str(final_root_1)][str(final_root_2)]
+
+    # Make the edges.txt file
+    edges_file = open(out_path + "edges.txt", "w")
+
+    make_edges_file(edges_dict, edges_file, subset_identifiers)
+
     fasta_file.close()
     variability_file.close()
     variable_regions_file.close()
+    genetic_distance_file.close()
+    edges_file.close()
     print("Script is done running")
 
 
