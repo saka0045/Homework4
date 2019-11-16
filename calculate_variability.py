@@ -44,9 +44,11 @@ def main():
     variability_file.write("Base,Variability,Smoothed Variability\n")
 
     # Collect the identifiers and sequences from the fasta file
+    print("Parsing input fasta file")
     identifiers, sequences = parse_fasta(fasta_file)
 
     # Calculate the variability of the sequence
+    print("Calculating sequence identity")
     sequence_identity_list = calculate_sequence_variability(identifiers, sequences)
 
     # Smooth the variability using Savitzky-Golay filter
@@ -56,6 +58,7 @@ def main():
     make_csv(smoothed_sequence_identity_list, variability_file, sequence_identity_list)
 
     # Interrogate the smoothed_sequence_identity_list and identify the variable region
+    print("Identifying variable regions")
     end_variable_region_list, start_variable_region_list = identify_variable_regions(smoothed_sequence_identity_list)
 
     # Make the variability region tab delimited file
@@ -68,10 +71,12 @@ def main():
 
     # Use the code from hw3 to make the tree
     # Make the edges file for the full 16S rRNA sequence
+    print("Creating the edge file for the full 16S rRNA sequences for first 100 sequences")
     full_sequence_edges_file = open(out_path + "full_sequence_edges.txt", "w")
     make_phylogenetic_tree(full_sequence_edges_file, out_path, subset_identifiers, subset_sequences)
 
-    # Subset the full sequence to just the first variable region
+    # Subset the full sequence to the first variable region
+    print("Creating edge and fasta files for the first variable region")
     first_variable_region_subset_sequences = make_variable_region_sequence_list(end_variable_region_list,
                                                                                 start_variable_region_list,
                                                                                 subset_sequences, 1)
@@ -81,18 +86,27 @@ def main():
     make_phylogenetic_tree(first_variable_region_file, out_path, subset_identifiers,
                            first_variable_region_subset_sequences)
 
-    # Subset the full sequence to just the fourth variable region
+    # Make the fasta file for variable region 1
+    first_variable_region_fasta_file = open(out_path + "first_variable_region.fasta", "w")
+    make_fasta_file(first_variable_region_fasta_file, first_variable_region_subset_sequences, subset_identifiers)
+
+    # Subset the full sequence to the fourth variable region
+    print("Creating edge and fasta files for the fourth variable region")
     fourth_variable_region_subset_sequences = make_variable_region_sequence_list(end_variable_region_list,
                                                                                  start_variable_region_list,
                                                                                  subset_sequences, 4)
-    print(fourth_variable_region_subset_sequences)
 
     # Make the edges file for variable region 4
     fourth_variable_region_file = open(out_path + "fourth_variable_region_edges.txt", "w")
     make_phylogenetic_tree(fourth_variable_region_file, out_path, subset_identifiers,
                            fourth_variable_region_subset_sequences)
 
+    # Make the fasta file for variable region 4
+    fourth_variable_region_fasta_file = open(out_path + "fourth_variable_region.fasta", "w")
+    make_fasta_file(fourth_variable_region_fasta_file, fourth_variable_region_subset_sequences, subset_identifiers)
+
     # Make the tip label for the phylogenetic tree
+    print("Making tip file for R script")
     tip_file = open(out_path + "hw4_tip_labels.txt", "w")
     # Same color for all of the tips
     for identifier in subset_identifiers:
@@ -103,10 +117,24 @@ def main():
     variable_regions_file.close()
     full_sequence_edges_file.close()
     first_variable_region_file.close()
+    first_variable_region_fasta_file.close()
+    fourth_variable_region_file.close()
+    fourth_variable_region_fasta_file.close()
     tip_file.close()
-    print(start_variable_region_list)
-    print(end_variable_region_list)
     print("Script is done running")
+
+
+def make_fasta_file(variable_region_fasta_file, variable_region_subset_sequences, subset_identifiers):
+    """
+    Function to make the fasta file for the variable region in the subset of 100 sequences
+    :param variable_region_fasta_file:
+    :param variable_region_subset_sequences:
+    :param subset_identifiers:
+    :return:
+    """
+    for index, identifier in enumerate(subset_identifiers):
+        variable_region_fasta_file.write(">" + identifier + "\n")
+        variable_region_fasta_file.write(variable_region_subset_sequences[index] + "\n")
 
 
 def make_variable_region_sequence_list(end_variable_region_list, start_variable_region_list, subset_sequences,
