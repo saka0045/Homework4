@@ -1,0 +1,3 @@
+Neither of the variable region trees look like the full sequence tree, which I expect it would happen. Because the
+variable regions have low sequence identity, they already have lower similarity compared to one another and it would
+only be by chance if the trees from the variable regions looked like the full sequence.

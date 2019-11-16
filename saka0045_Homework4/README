@@ -1,0 +1,28 @@
+The script calculate_variability.py take the input fasta and the directory to save all of the output files as input.
+Requires functions from phylogeny.py, which was made for hw3. The outputs of this script are:
+    identity values, one per line, both raw and smoothed (variability.csv)
+    start and stop positions of the variable regions (variable_regions.txt)
+    edge file for full 16S rRNA for the first subset of 100 sequences to make the pylogentic tree (full_sequence_edges.txt)
+    edge file for the first variable region to make the phylogenetic tree (first_variable_region_edges.txt)
+    fasta file for the first variable region (first_variable_region.fasta)
+    edge file for the fourth variable region to make the phylogenetic tree (fourth_variable_region_edges.txt)
+    fasta file for the fourth variable region (fourth_variable_region_tree.pdf)
+    tip labels for the R script to make the phylogenetic tree (hw4_tip_labels.txt)
+Usage:
+    python calculate_variability.py -i {inputFastaFile} -o {outputDirectory}
+
+The plot_variability.R will take the variability.csv file and create the plot of sequence identity across the 16S rRNA
+sequence (variability.pdf). A vertical red line at 75% is drawn to show the variable regions that falls below the line.
+75% was chosen because with 4 nucleotides there is 25% chance of any nucleotide to be at that sequence by chance.
+Chance of any 3 nucleotides to be at that position is up to 75%, therefore if the sequence identity at the given
+position is greater than 75%, the sequence is conserved.
+Usage:
+    Rscript plot_variability.R ./variability.csv
+
+The hw3-plot-edges.r script from homework 3 is used to create the phylogeneic tree using the edges.txt file for the
+corresponding regions (full sequence, first variable region and the fourth variable region). The output file is named
+tree.pdf and needs to be renamed before executing for other regions, otherwise the output tree pdf file will be
+overwritten. The tree deliverables for question 4 are named full_sequence_tree.pdf, first_variable_region_tree.pdf and
+fourth_variable_region_tree.pdf
+Usage:
+    Rscript hw3-plot-edges.r {region_of_interest}_edges.txt hw4_tip_labels.txt
