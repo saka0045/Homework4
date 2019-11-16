@@ -2,6 +2,8 @@
 """
 Calculates the variability in the DNA sequence for the fasta file
 
+Requires the input fasta file and need to specify the output directory to save all the files.
+
 Discussed homework with Jeannette Rustin
 """
 
@@ -52,6 +54,8 @@ def main():
     sequence_identity_list = calculate_sequence_variability(identifiers, sequences)
 
     # Smooth the variability using Savitzky-Golay filter
+    # The Savitzky-Golay filter was used because of the filter's ability to fit successive sub-sets of adjacent
+    # data points. The window size and polynomial order was chosen by trial and error
     smoothed_sequence_identity_list = ssg.savgol_filter(sequence_identity_list, 61, 3)
 
     # Write the results to csv file
@@ -243,6 +247,13 @@ def identify_variable_regions(smoothed_sequence_identity_list):
 
 
 def make_csv(smoothed_sequence_identity_list, variability_file, sequence_identity_list):
+    """
+    Make the csv file to make the variability graph
+    :param smoothed_sequence_identity_list:
+    :param variability_file:
+    :param sequence_identity_list:
+    :return:
+    """
     index = 0
     while index in range(0, len(sequence_identity_list)):
         base = index + 1
@@ -252,6 +263,11 @@ def make_csv(smoothed_sequence_identity_list, variability_file, sequence_identit
 
 
 def parse_fasta(fasta_file):
+    """
+    Parse the fasta file and get the identifiers and sequences
+    :param fasta_file:
+    :return:
+    """
     identifiers = []
     sequences = []
     for line in fasta_file:
@@ -266,6 +282,13 @@ def parse_fasta(fasta_file):
 
 
 def calculate_sequence_variability(identifiers, sequences):
+    """
+    Calculate the sequence variability in each position of the given sequences.
+    Ignores gaps or any other symbol other than A, T, C or G
+    :param identifiers:
+    :param sequences:
+    :return:
+    """
     index = 0
     sequence_identity_list = []
     while index in range(0, len(sequences[0])):

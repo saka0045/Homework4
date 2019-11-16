@@ -264,7 +264,7 @@ def make_edges_file(edges_dict, edges_file, identifiers):
     # Also keep track of how many times the ancesteral node was written
     # Each ancestral node should have two descendants so it needs to be written twice
     ancestral_nodes_only_written_once = []
-    # Start at the internal node root, ntips + 1, which is 62 for this homework
+    # Start at the internal node root, ntips + 1
     ancestral_node_to_write = str((len(identifiers) + 1))
     # Calculate the number of nodes to write, which is all of the nested keys in the edges_dict
     number_of_nodes_to_write = 0
@@ -293,7 +293,7 @@ def make_edges_file(edges_dict, edges_file, identifiers):
                 edges_file.write(str(edge_length) + "\n")
                 # Decrease the number of nodes to write by 1
                 number_of_nodes_to_write -= 1
-                # If the descendant node number is greater than 61, it is a node
+                # If the descendant node number is greater than nTips, it is a node
                 if int(descendant_node_to_write) > len(identifiers):
                     descendant_nodes_written.append(descendant_node_to_write)
                     # If the ancestral node was written as many times as it has descendant tip/node,
@@ -311,7 +311,7 @@ def make_edges_file(edges_dict, edges_file, identifiers):
                     else:
                         ancestral_node_to_write = descendant_node_to_write
                     break
-                # If the descendant node number is less than or equal to 61, it is a tip
+                # If the descendant node number is less than or equal to nTips, it is a tip
                 else:
                     tips_written.append(descendant_node_to_write)
                     # If the ancestral node was written as many times as it has descendant tip/node,
