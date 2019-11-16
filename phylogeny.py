@@ -270,7 +270,6 @@ def make_edges_file(edges_dict, edges_file, identifiers):
     number_of_nodes_to_write = 0
     for key in edges_dict.keys():
         number_of_nodes_to_write += len(edges_dict[key])
-    print(number_of_nodes_to_write)
     # Loop until all of the nodes are written
     while number_of_nodes_to_write > 0:
         edges_file.write(ancestral_node_to_write + "\t")
@@ -325,7 +324,6 @@ def make_edges_file(edges_dict, edges_file, identifiers):
                         try:
                             ancestral_node_to_write = ancestral_nodes_only_written_once[-1]
                         except IndexError:
-                            print(number_of_nodes_to_write)
                             number_of_nodes_to_write = 0
                             break
                     break

@@ -67,13 +67,82 @@ def main():
     subset_identifiers = identifiers[0:100]
 
     # Use the code from hw3 to make the tree
-    # Calculate the genetic distances of the 100 subset of sequences
+    # Make the edges file for the full 16S rRNA sequence
+    full_sequence_edges_file = open(out_path + "full_sequence_edges.txt", "w")
+    make_phylogenetic_tree(full_sequence_edges_file, out_path, subset_identifiers, subset_sequences)
+
+    # Subset the full sequence to just the first variable region
+    first_variable_region_subset_sequences = make_variable_region_sequence_list(end_variable_region_list,
+                                                                                start_variable_region_list,
+                                                                                subset_sequences, 1)
+
+    # Make the edges file for variable region 1
+    first_variable_region_file = open(out_path + "first_variable_region_edges.txt", "w")
+    make_phylogenetic_tree(first_variable_region_file, out_path, subset_identifiers,
+                           first_variable_region_subset_sequences)
+
+    # Subset the full sequence to just the fourth variable region
+    fourth_variable_region_subset_sequences = make_variable_region_sequence_list(end_variable_region_list,
+                                                                                 start_variable_region_list,
+                                                                                 subset_sequences, 4)
+    print(fourth_variable_region_subset_sequences)
+
+    # Make the edges file for variable region 4
+    fourth_variable_region_file = open(out_path + "fourth_variable_region_edges.txt", "w")
+    make_phylogenetic_tree(fourth_variable_region_file, out_path, subset_identifiers,
+                           fourth_variable_region_subset_sequences)
+
+    # Make the tip label for the phylogenetic tree
+    tip_file = open(out_path + "hw4_tip_labels.txt", "w")
+    # Same color for all of the tips
+    for identifier in subset_identifiers:
+        tip_file.write(identifier + "\tPlaceHolderText\t#FF7F00\n")
+
+    fasta_file.close()
+    variability_file.close()
+    variable_regions_file.close()
+    full_sequence_edges_file.close()
+    first_variable_region_file.close()
+    tip_file.close()
+    print(start_variable_region_list)
+    print(end_variable_region_list)
+    print("Script is done running")
+
+
+def make_variable_region_sequence_list(end_variable_region_list, start_variable_region_list, subset_sequences,
+                                       variable_region):
+    """
+    Subsets the full 16S rRNA sequence to the designated variable region
+    :param end_variable_region_list:
+    :param start_variable_region_list:
+    :param subset_sequences:
+    :param variable_region:
+    :return:
+    """
+    variable_region_start = (start_variable_region_list[variable_region - 1] - 1)
+    variable_region_end = end_variable_region_list[variable_region - 1]
+    variable_region_subset_sequences = []
+    for sequence in subset_sequences:
+        variable_region_sequence = sequence[variable_region_start:variable_region_end]
+        variable_region_subset_sequences.append(variable_region_sequence)
+    return variable_region_subset_sequences
+
+
+def make_phylogenetic_tree(edges_file, out_path, subset_identifiers, subset_sequences):
+    """
+    This function wraps the functions from hw3 to make the edges.txt needed for the R script
+    to make the phylogenetic tree.
+    Refer to the functions in phylogeny.py for detailed description of each functions used below
+    :param edges_file:
+    :param out_path:
+    :param subset_identifiers:
+    :param subset_sequences:
+    :return:
+    """
     genetic_distance_dict, genetic_distance_file = create_genetic_distance_dict_and_file(subset_identifiers, out_path,
                                                                                          subset_sequences)
-
     root = len(subset_identifiers) + (len(subset_identifiers) - 2)
     edges_dict = {}
-
     # Loop until all of the neighbors are joined
     while root > len(subset_identifiers):
         # Calculate the Q matrix and store the Q distances in a dictionary
@@ -90,26 +159,14 @@ def main():
                                                         min_q_distance_partner, root)
         # Subtract 1 from the root number and repeat
         root -= 1
-
-    # For odd number of tips, there will be 2 nodes left over
-    # Add the distance between those nodes and add it to the edges_dict
+    # Add the distance between the final two nodes and add it to the edges_dict
     if len(genetic_distance_dict) == 2:
         final_roots = list(genetic_distance_dict.keys())
         final_root_1 = min(final_roots)
         final_root_2 = max(final_roots)
         edges_dict[str(final_root_1)][str(final_root_2)] = genetic_distance_dict[str(final_root_1)][str(final_root_2)]
-
     # Make the edges.txt file
-    edges_file = open(out_path + "edges.txt", "w")
-
     make_edges_file(edges_dict, edges_file, subset_identifiers)
-
-    fasta_file.close()
-    variability_file.close()
-    variable_regions_file.close()
-    genetic_distance_file.close()
-    edges_file.close()
-    print("Script is done running")
 
 
 def identify_variable_regions(smoothed_sequence_identity_list):
